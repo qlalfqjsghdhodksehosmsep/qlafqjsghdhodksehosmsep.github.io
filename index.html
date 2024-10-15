@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacman Game</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: black;
+        }
+        canvas {
+            background-color: black;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div id="score">Score: 0</div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let pacman = {
+            x: 300,
+            y: 200,
+            radius: 15,
+            direction: 0,
+            speed: 5
+        };
+        let pellets = [];
+        let score = 0;
+
+        // Generate pellets
+        function createPellets() {
+            for (let i = 0; i < 10; i++) {
+                pellets.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: 5
+                });
+            }
+        }
+
+        // Draw Pacman
+        function drawPacman() {
+            ctx.beginPath();
+            ctx.arc(pacman.x, pacman.y, pacman.radius, pacman.direction + 0.25 * Math.PI, pacman.direction + 1.75 * Math.PI);
+            ctx.lineTo(pacman.x, pacman.y);
+            ctx.fillStyle = 'yellow';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw Pellets
+        function drawPellets() {
+            for (let pellet of pellets) {
+                ctx.beginPath();
+                ctx.arc(pellet.x, pellet.y, pellet.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+
+        // Move Pacman
+        function movePacman() {
+            if (pacman.direction === 0) pacman.x += pacman.speed; // right
+            if (pacman.direction === 1) pacman.y -= pacman.speed; // up
+            if (pacman.direction === 2) pacman.x -= pacman.speed; // left
+            if (pacman.direction === 3) pacman.y += pacman.speed; // down
+
+            // Wrap around edges
+            if (pacman.x > canvas.width) pacman.x = 0;
+            if (pacman.x < 0) pacman.x = canvas.width;
+            if (pacman.y > canvas.height) pacman.y = 0;
+            if (pacman.y < 0) pacman.y = canvas.height;
+        }
+
+        // Handle pellet collection
+        function collectPellets() {
+            for (let i = pellets.length - 1; i >= 0; i--) {
+                let pellet = pellets[i];
+                let dist = Math.hypot(pacman.x - pellet.x, pacman.y - pellet.y);
+                if (dist < pacman.radius + pellet.radius) {
+                    pellets.splice(i, 1); // remove pellet
+                    score += 10; // increase score
+                    document.getElementById('score').textContent = 'Score: ' + score;
+                }
+            }
+        }
+
+        // Key controls
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowRight') pacman.direction = 0;
+            if (event.key === 'ArrowUp') pacman.direction = 1;
+            if (event.key === 'ArrowLeft') pacman.direction = 2;
+            if (event.key === 'ArrowDown') pacman.direction = 3;
+        });
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPacman();
+            drawPellets();
+            movePacman();
+            collectPellets();
+            requestAnimationFrame(gameLoop);
+        }
+
+        createPellets();
+        gameLoop();
+    </script>
+</body>
+</html>
